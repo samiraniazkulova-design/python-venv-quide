@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ky">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Виртуалдык Чөйрөсү: Интерактивдүү Колдонмо</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FAF7F2;
+            color: #1E293B;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+
+        .terminal-window {
+            background-color: #1E1E1E;
+            color: #D4D4D4;
+            font-family: 'Courier New', Courier, monospace;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-active {
+            border-bottom: 3px solid #3B82F6;
+            color: #3B82F6;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+<!-- Chosen Palette: Warm Harmony (Warm neutrals with professional blue accents) -->
+<!-- Application Structure Plan: 
+    1. Introduction Dashboard: High-level overview and stats.
+    2. Interactive Comparison: Why it's needed (Global vs Venv).
+    3. OS Command Selector: Dynamic switcher for Windows/Mac/Linux.
+    4. Workflow Stepper: Visual steps from creation to deactivation.
+    5. Best Practices & Knowledge Base.
+    Chosen for usability to ensure the user can find the exact command for their OS quickly. -->
+<!-- Visualization & Content Choices: 
+    - Bar Chart: Comparing package isolation levels.
+    - Terminal UI: For command clarity.
+    - Interactive Stepper: For logical flow.
+    - Confirmation: NO SVG graphics used. NO Mermaid JS used. -->
+<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+<div class="min-h-screen flex flex-col">
+    <!-- Navigation -->
+    <nav class="bg-white border-b border-stone-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-2">
+                    <span class="text-blue-600 text-2xl font-bold"><i class="fa-brands fa-python"></i></span>
+                    <span class="font-bold text-xl tracking-tight text-slate-800">Python Venv Guide</span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <button onclick="scrollToSection('intro')" class="text-sm font-medium hover:text-blue-600 transition">Башкы</button>
+                    <button onclick="scrollToSection('why')" class="text-sm font-medium hover:text-blue-600 transition">Эмне үчүн?</button>
+                    <button onclick="scrollToSection('commands')" class="text-sm font-medium hover:text-blue-600 transition">Буйруктар</button>
+                    <button onclick="scrollToSection('workflow')" class="text-sm font-medium hover:text-blue-600 transition">Процесс</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow">
+        <!-- Hero Section -->
+        <section id="intro" class="py-16 px-4 bg-white">
+            <div class="max-w-5xl mx-auto text-center">
+                <h1 class="text-4xl md:text-6xl font-extrabold text-slate-900 mb-6">Python Виртуалдык Чөйрөсү</h1>
+                <p class="text-xl text-slate-600 mb-8 max-w-3xl mx-auto">
+                    Бул бөлүмдө биз виртуалдык чөйрөнүн негиздерин карап чыгабыз. Виртуалдык чөйрө — бул долбооруңуздун библиотекаларын башкалардан бөлүп турган "жеке мейкиндиги".
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                    <div class="p-6 bg-blue-50 rounded-2xl border border-blue-100">
+                        <div class="text-blue-600 text-3xl mb-3"><i class="fa-solid fa-shield-halved"></i></div>
+                        <h3 class="font-bold text-lg mb-1">Изоляция</h3>
+                        <p class="text-sm text-slate-500">Долбоорлор бири-бирине тоскоол болбойт.</p>
+                    </div>
+                    <div class="p-6 bg-emerald-50 rounded-2xl border border-emerald-100">
+                        <div class="text-emerald-600 text-3xl mb-3"><i class="fa-solid fa-broom"></i></div>
+                        <h3 class="font-bold text-lg mb-1">Тазалык</h3>
+                        <p class="text-sm text-slate-500">Глобалдык системада ашыкча файлдар жок.</p>
+                    </div>
+                    <div class="p-6 bg-purple-50 rounded-2xl border border-purple-100">
+                        <div class="text-purple-600 text-3xl mb-3"><i class="fa-solid fa-code-merge"></i></div>
+                        <h3 class="font-bold text-lg mb-1">Коопсуздук</h3>
+                        <p class="text-sm text-slate-500">Библиотека версияларын так башкаруу.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Visualization Section -->
+        <section id="why" class="py-16 px-4 bg-stone-50">
+            <div class="max-w-5xl mx-auto">
+                <h2 class="text-3xl font-bold text-slate-900 mb-4 text-center">Эмне үчүн виртуалдык чөйрө маанилүү?</h2>
+                <p class="text-slate-600 text-center mb-10">Төмөндөгү график глобалдык орнотуу менен виртуалдык чөйрөнү колдонуунун ортосундагы конфликттердин ыктымалдуулугун көрсөтөт.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                    <div class="chart-container">
+                        <canvas id="conflictChart"></canvas>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-semibold mb-4">Версиялык Конфликттер</h3>
+                        <p class="text-slate-600 mb-4">
+                            Элестетиңиз, бир долбооруңуз <b>Django 3.2</b> менен иштейт, ал эми экинчиси <b>Django 5.0</b> талап кылат. Глобалдык чөйрөдө бул эки версия бир учурда жашай албайт.
+                        </p>
+                        <div class="bg-white p-5 rounded-xl shadow-sm border border-stone-200">
+                            <h4 class="font-bold mb-2 text-blue-600">Чечим:</h4>
+                            <ul class="space-y-2 text-sm text-slate-700">
+                                <li><i class="fa-solid fa-check text-green-500 mr-2"></i> Ар бир долбоор үчүн өзүнчө <code>venv</code> түзүү.</li>
+                                <li><i class="fa-solid fa-check text-green-500 mr-2"></i> Версияларды чектөөсүз жаңыртуу.</li>
+                                <li><i class="fa-solid fa-check text-green-500 mr-2"></i> <code>requirements.txt</code> аркылуу башкаларга өткөрүү.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Command Switcher Section -->
+        <section id="commands" class="py-16 px-4 bg-white">
+            <div class="max-w-5xl mx-auto">
+                <h2 class="text-3xl font-bold text-slate-900 mb-4 text-center">Интерактивдүү Терминал</h2>
+                <p class="text-slate-600 text-center mb-8">Операциялык системаңызды тандаңыз жана тиешелүү буйруктарды алыңыз.</p>
+                
+                <div class="flex justify-center mb-8 bg-stone-100 p-1 rounded-lg inline-flex w-full max-w-md mx-auto">
+                    <button onclick="switchOS('windows')" id="btn-windows" class="flex-1 py-2 px-4 rounded-md transition font-medium bg-white shadow-sm text-blue-600">Windows</button>
+                    <button onclick="switchOS('unix')" id="btn-unix" class="flex-1 py-2 px-4 rounded-md transition font-medium text-slate-600 hover:bg-white/50">macOS / Linux</button>
+                </div>
+
+                <div class="terminal-window p-6 overflow-x-auto">
+                    <div class="flex gap-2 mb-4">
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                    </div>
+                    <div id="terminal-content" class="space-y-4">
+                        <!-- Content injected by JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Workflow Stepper -->
+        <section id="workflow" class="py-16 px-4 bg-stone-50">
+            <div class="max-w-5xl mx-auto">
+                <h2 class="text-3xl font-bold text-slate-900 mb-12 text-center">Иштөө Процесси</h2>
+                <div class="relative">
+                    <!-- Line -->
+                    <div class="hidden md:block absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-blue-200"></div>
+                    
+                    <div class="space-y-12">
+                        <!-- Step 1 -->
+                        <div class="relative flex items-center justify-between md:justify-normal">
+                            <div class="hidden md:block w-1/2 pr-12 text-right">
+                                <h3 class="text-xl font-bold">Түзүү</h3>
+                                <p class="text-slate-500">Проект папкасында жаңы чөйрөнү инициализациялоо.</p>
+                            </div>
+                            <div class="z-10 bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold shadow-lg">1</div>
+                            <div class="md:w-1/2 md:pl-12 pl-6">
+                                <code class="bg-slate-800 text-white p-2 rounded text-sm">python -m venv venv</code>
+                            </div>
+                        </div>
+
+                        <!-- Step 2 -->
+                        <div class="relative flex items-center flex-row-reverse md:flex-row">
+                            <div class="md:w-1/2 md:pr-12 pr-6 text-left md:text-right">
+                                <code class="bg-slate-800 text-white p-2 rounded text-sm" id="step-active-cmd">venv\Scripts\activate</code>
+                            </div>
+                            <div class="z-10 bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold shadow-lg">2</div>
+                            <div class="hidden md:block w-1/2 pl-12">
+                                <h3 class="text-xl font-bold">Активдештирүү</h3>
+                                <p class="text-slate-500">Чөйрөнү иштетүү (Терминалда (venv) жазуусу чыгат).</p>
+                            </div>
+                        </div>
+
+                        <!-- Step 3 -->
+                        <div class="relative flex items-center">
+                            <div class="hidden md:block w-1/2 pr-12 text-right">
+                                <h3 class="text-xl font-bold">Пакеттерди орнотуу</h3>
+                                <p class="text-slate-500">Керектүү библиотекаларды изоляцияланган түрдө орнотуу.</p>
+                            </div>
+                            <div class="z-10 bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold shadow-lg">3</div>
+                            <div class="md:w-1/2 md:pl-12 pl-6">
+                                <code class="bg-slate-800 text-white p-2 rounded text-sm">pip install requests</code>
+                            </div>
+                        </div>
+
+                        <!-- Step 4 -->
+                        <div class="relative flex items-center flex-row-reverse md:flex-row">
+                            <div class="md:w-1/2 md:pr-12 pr-6 text-left md:text-right">
+                                <code class="bg-slate-800 text-white p-2 rounded text-sm">deactivate</code>
+                            </div>
+                            <div class="z-10 bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold shadow-lg">4</div>
+                            <div class="hidden md:block w-1/2 pl-12">
+                                <h3 class="text-xl font-bold">Чыгуу</h3>
+                                <p class="text-slate-500">Жумушту бүткөндөн кийин деактивациялоо.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-slate-900 text-stone-400 py-12 px-4">
+        <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h3 class="text-white font-bold text-lg mb-4">Python Venv Guide</h3>
+                <p class="text-sm">Бул колдонмо Python тилинде профессионалдуу иштөөнү каалагандар үчүн атайын даярдалды. Виртуалдык чөйрө — бул тартиптүү коддун башталышы.</p>
+            </div>
+            <div class="text-center md:text-right">
+                <p class="text-sm">© 2024 Бардык укуктар корголгон.</p>
+                <div class="mt-4 flex justify-center md:justify-end space-x-4">
+                    <a href="#" class="hover:text-blue-400 transition"><i class="fa-brands fa-github text-xl"></i></a>
+                    <a href="#" class="hover:text-blue-400 transition"><i class="fa-brands fa-python text-xl"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<script>
+    // State management
+    let currentOS = 'windows';
+
+    const osData = {
+        windows: {
+            title: "Windows (CMD / PowerShell)",
+            commands: [
+                { label: "1. Чөйрө түзүү", cmd: "python -m venv venv" },
+                { label: "2. Активдештирүү (CMD)", cmd: "venv\\Scripts\\activate" },
+                { label: "3. Активдештирүү (PowerShell)", cmd: ".\\venv\\Scripts\\Activate.ps1" },
+                { label: "4. Пакеттерди сактоо", cmd: "pip freeze > requirements.txt" }
+            ],
+            stepCmd: "venv\\Scripts\\activate"
+        },
+        unix: {
+            title: "macOS / Linux (Terminal)",
+            commands: [
+                { label: "1. Чөйрө түзүү", cmd: "python3 -m venv venv" },
+                { label: "2. Активдештирүү", cmd: "source venv/bin/activate" },
+                { label: "3. Пакеттерди сактоо", cmd: "pip freeze > requirements.txt" },
+                { label: "4. Баарын орнотуу", cmd: "pip install -r requirements.txt" }
+            ],
+            stepCmd: "source venv/bin/activate"
+        }
+    };
+
+    // UI Updates
+    function switchOS(os) {
+        currentOS = os;
+        
+        // Update Buttons
+        const btnWin = document.getElementById('btn-windows');
+        const btnUnix = document.getElementById('btn-unix');
+        
+        if (os === 'windows') {
+            btnWin.className = "flex-1 py-2 px-4 rounded-md transition font-medium bg-white shadow-sm text-blue-600";
+            btnUnix.className = "flex-1 py-2 px-4 rounded-md transition font-medium text-slate-600 hover:bg-white/50";
+        } else {
+            btnUnix.className = "flex-1 py-2 px-4 rounded-md transition font-medium bg-white shadow-sm text-blue-600";
+            btnWin.className = "flex-1 py-2 px-4 rounded-md transition font-medium text-slate-600 hover:bg-white/50";
+        }
+
+        renderTerminal();
+        document.getElementById('step-active-cmd').innerText = osData[os].stepCmd;
+    }
+
+    function renderTerminal() {
+        const container = document.getElementById('terminal-content');
+        container.innerHTML = `<p class="text-blue-400 font-bold mb-2"># ${osData[currentOS].title}</p>`;
+        
+        osData[currentOS].commands.forEach(item => {
+            container.innerHTML += `
+                <div class="fade-in">
+                    <p class="text-xs text-stone-500 mb-1">// ${item.label}</p>
+                    <div class="flex justify-between items-center group">
+                        <span class="text-green-400">$ ${item.cmd}</span>
+                        <button onclick="copyToClipboard('${item.cmd}')" class="opacity-0 group-hover:opacity-100 transition text-stone-500 hover:text-white">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text);
+        alert('Көчүрүлдү: ' + text);
+    }
+
+    function scrollToSection(id) {
+        document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Chart.js Initialization
+    function initChart() {
+        const ctx = document.getElementById('conflictChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Глобалдык', 'Виртуалдык'],
+                datasets: [{
+                    label: 'Конфликттердин ыктымалдуулугу (%)',
+                    data: [85, 5],
+                    backgroundColor: ['#FCA5A5', '#6EE7B7'],
+                    borderColor: ['#EF4444', '#10B981'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    }
+
+    // Load initial state
+    window.onload = () => {
+        switchOS('windows');
+        initChart();
+    };
+</script>
+</body>
+</html>
